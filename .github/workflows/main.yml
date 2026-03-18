@@ -51,7 +51,7 @@ jobs:
         uses: google-github-actions/deploy-appengine@v3
         with:
           deliverables: app.yaml
-          version: v1
+          version: gh-${{ github.run_number }}-${{ github.run_attempt }}
 
       - name: Test
         run: curl "${{ steps.deploy.outputs.url }}"
