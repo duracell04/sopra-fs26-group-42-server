@@ -40,7 +40,7 @@ public class UserService {
 
 	public User createUser(User newUser) {
 		newUser.setToken(UUID.randomUUID().toString());
-		newUser.setStatus(UserStatus.OFFLINE);
+		newUser.setStatus(UserStatus.ONLINE);
 		checkIfUserExists(newUser);
 		// saves the given entity but data is only persisted in the database once
 		// flush() is called
@@ -49,6 +49,19 @@ public class UserService {
 
 		log.debug("Created Information for User: {}", newUser);
 		return newUser;
+	}
+
+	public User loginUser(String username, String password) {
+		User user = userRepository.findByUsername(username);
+
+		if (user == null || !user.getPassword().equals(password)) {
+			throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Invalid username or password.");
+		}
+
+		user.setStatus(UserStatus.ONLINE);
+		userRepository.flush();
+
+		return user;
 	}
 
 	/**

@@ -36,6 +36,9 @@ public class User implements Serializable {
 	private String token;
 
 	@Column(nullable = false)
+	private String password;
+
+	@Column(nullable = false)
 	private UserStatus status;
 
 	public Long getId() {
@@ -68,6 +71,14 @@ public class User implements Serializable {
 
 	public void setToken(String token) {
 		this.token = token;
+	}
+
+	public String getPassword() {
+		return password;
+	}
+
+	public void setPassword(String password) {
+		this.password = password;
 	}
 
 	public UserStatus getStatus() {
