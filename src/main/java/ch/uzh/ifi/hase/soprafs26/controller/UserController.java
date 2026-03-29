@@ -44,6 +44,12 @@ public class UserController {
 		return userGetDTOs;
 	}
 
+	@PutMapping("/users/{id}/logout")
+	@ResponseStatus(HttpStatus.NO_CONTENT)
+	public void logoutUser(@PathVariable Long id) {
+		userService.logoutUser(id);
+	}
+
 	@PostMapping("/users")
 	@ResponseStatus(HttpStatus.CREATED)
 	@ResponseBody

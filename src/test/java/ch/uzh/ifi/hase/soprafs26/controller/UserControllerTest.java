@@ -26,8 +26,10 @@ import java.util.List;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 import static org.mockito.BDDMockito.given;
+import static org.mockito.Mockito.doNothing;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -99,6 +101,19 @@ public class UserControllerTest {
 				.andExpect(jsonPath("$.name", is(user.getName())))
 				.andExpect(jsonPath("$.username", is(user.getUsername())))
 				.andExpect(jsonPath("$.status", is(user.getStatus().toString())));
+	}
+
+	@Test
+	public void logoutUser_validInput_returns204() throws Exception {
+		// given
+		doNothing().when(userService).logoutUser(1L);
+
+		// when
+		MockHttpServletRequestBuilder putRequest = put("/users/1/logout")
+				.contentType(MediaType.APPLICATION_JSON);
+
+		// then
+		mockMvc.perform(putRequest).andExpect(status().isNoContent());
 	}
 
 	/**

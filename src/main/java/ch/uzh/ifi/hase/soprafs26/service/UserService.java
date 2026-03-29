@@ -74,6 +74,14 @@ public class UserService {
 	 * @throws org.springframework.web.server.ResponseStatusException
 	 * @see User
 	 */
+	public void logoutUser(Long id) {
+		User user = userRepository.findById(id)
+				.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,
+						"User with id " + id + " was not found"));
+		user.setStatus(UserStatus.OFFLINE);
+		userRepository.flush();
+	}
+
 	private void checkIfUserExists(User userToBeCreated) {
 		User userByUsername = userRepository.findByUsername(userToBeCreated.getUsername());
 		User userByName = userRepository.findByName(userToBeCreated.getName());
