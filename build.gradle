@@ -59,6 +59,7 @@ sonar {
         property "sonar.projectKey", "duracell04_sopra-fs26-group-42-server"
         property "sonar.organization", "duracell04"
         property "sonar.host.url", "https://sonarcloud.io"
+        property "sonar.coverage.jacoco.xmlReportPaths", "${layout.buildDirectory.get().asFile}/reports/jacoco/test/jacocoTestReport.xml"
     }
 }
 
@@ -66,6 +67,10 @@ jacocoTestReport {
     reports {
         xml.required = true
     }
+}
+
+tasks.named("sonar") {
+    dependsOn tasks.named("jacocoTestReport")
 }
 
 test {

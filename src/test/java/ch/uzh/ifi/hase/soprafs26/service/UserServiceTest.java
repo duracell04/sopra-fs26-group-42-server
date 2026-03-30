@@ -12,6 +12,7 @@ import ch.uzh.ifi.hase.soprafs26.constant.UserStatus;
 import ch.uzh.ifi.hase.soprafs26.entity.User;
 import ch.uzh.ifi.hase.soprafs26.repository.UserRepository;
 
+import java.util.List;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -55,6 +56,16 @@ public class UserServiceTest {
 		assertEquals(testUser.getUsername(), createdUser.getUsername());
 		assertNotNull(createdUser.getToken());
 		assertEquals(UserStatus.ONLINE, createdUser.getStatus());
+	}
+
+	@Test
+	public void getUsers_returnsRepositoryUsers() {
+		Mockito.when(userRepository.findAll()).thenReturn(List.of(testUser));
+
+		List<User> users = userService.getUsers();
+
+		assertEquals(1, users.size());
+		assertEquals(testUser.getUsername(), users.get(0).getUsername());
 	}
 
 	@Test
@@ -105,6 +116,34 @@ public class UserServiceTest {
 
 		// then
 		assertThrows(ResponseStatusException.class, () -> userService.logoutUser(99L));
+	}
+
+	@Test
+	public void loginUser_validCredentials_setsStatusOnline() {
+		testUser.setPassword("password123");
+		testUser.setStatus(UserStatus.OFFLINE);
+		Mockito.when(userRepository.findByUsername("testUsername")).thenReturn(testUser);
+
+		User loggedInUser = userService.loginUser("testUsername", "password123");
+
+		assertEquals(UserStatus.ONLINE, loggedInUser.getStatus());
+		assertEquals(testUser.getUsername(), loggedInUser.getUsername());
+		Mockito.verify(userRepository, Mockito.times(1)).flush();
+	}
+
+	@Test
+	public void loginUser_unknownUsername_throwsException() {
+		Mockito.when(userRepository.findByUsername("missingUser")).thenReturn(null);
+
+		assertThrows(ResponseStatusException.class, () -> userService.loginUser("missingUser", "password123"));
+	}
+
+	@Test
+	public void loginUser_wrongPassword_throwsException() {
+		testUser.setPassword("correctPassword");
+		Mockito.when(userRepository.findByUsername("testUsername")).thenReturn(testUser);
+
+		assertThrows(ResponseStatusException.class, () -> userService.loginUser("testUsername", "wrongPassword"));
 	}
 
 }

@@ -6,6 +6,7 @@ import tools.jackson.databind.ObjectMapper;
 
 import ch.uzh.ifi.hase.soprafs26.constant.UserStatus;
 import ch.uzh.ifi.hase.soprafs26.entity.User;
+import ch.uzh.ifi.hase.soprafs26.rest.dto.UserLoginDTO;
 import ch.uzh.ifi.hase.soprafs26.rest.dto.UserPostDTO;
 import ch.uzh.ifi.hase.soprafs26.service.UserService;
 
@@ -114,6 +115,35 @@ public class UserControllerTest {
 
 		// then
 		mockMvc.perform(putRequest).andExpect(status().isNoContent());
+	}
+
+	@Test
+	public void loginUser_validInput_returns200() throws Exception {
+		User user = new User();
+		user.setId(1L);
+		user.setName("Test User");
+		user.setUsername("testUsername");
+		user.setPassword("password123");
+		user.setToken("1");
+		user.setStatus(UserStatus.ONLINE);
+
+		UserLoginDTO userLoginDTO = new UserLoginDTO();
+		userLoginDTO.setUsername("testUsername");
+		userLoginDTO.setPassword("password123");
+
+		given(userService.loginUser("testUsername", "password123")).willReturn(user);
+
+		MockHttpServletRequestBuilder postRequest = post("/users/login")
+				.contentType(MediaType.APPLICATION_JSON)
+				.content(asJsonString(userLoginDTO));
+
+		mockMvc.perform(postRequest)
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.id", is(user.getId().intValue())))
+				.andExpect(jsonPath("$.name", is(user.getName())))
+				.andExpect(jsonPath("$.username", is(user.getUsername())))
+				.andExpect(jsonPath("$.status", is(user.getStatus().toString())))
+				.andExpect(jsonPath("$.token", is(user.getToken())));
 	}
 
 	/**
