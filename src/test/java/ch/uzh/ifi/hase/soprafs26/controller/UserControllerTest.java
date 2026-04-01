@@ -34,6 +34,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+
 /**
  * UserControllerTest
  * This is a WebMvcTest which allows to test the UserController i.e. GET/POST
@@ -144,6 +145,33 @@ public class UserControllerTest {
 				.andExpect(jsonPath("$.username", is(user.getUsername())))
 				.andExpect(jsonPath("$.status", is(user.getStatus().toString())))
 				.andExpect(jsonPath("$.token", is(user.getToken())));
+	}
+
+	@Test
+	public void getUserProfile_validInput_returns200() throws Exception {
+		User user = new User();
+		user.setId(1L);
+		user.setName("Test User");
+		user.setUsername("testUsername");
+		user.setStatus(UserStatus.ONLINE);
+		user.setHighestScore(25);
+		user.setTotalScore(100);
+		user.setTimePlayed(360L);
+		user.setCreationDate(java.time.LocalDate.of(2026, 3, 29));
+
+		given(userService.getUserProfile(1L)).willReturn(user);
+
+		MockHttpServletRequestBuilder getRequest = get("/users/1/profile")
+				.contentType(MediaType.APPLICATION_JSON);
+
+		mockMvc.perform(getRequest)
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.userId", is(1)))
+				.andExpect(jsonPath("$.username", is("testUsername")))
+				.andExpect(jsonPath("$.joinDate", is("2026-03-29")))
+				.andExpect(jsonPath("$.highestScore", is(25)))
+				.andExpect(jsonPath("$.totalScore", is(100)))
+				.andExpect(jsonPath("$.timePlayed", is(360)));
 	}
 
 	/**

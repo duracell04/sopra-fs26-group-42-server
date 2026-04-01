@@ -6,6 +6,8 @@ import ch.uzh.ifi.hase.soprafs26.constant.UserStatus;
 
 import java.io.Serializable;
 
+import java.time.LocalDate;
+
 /**
  * Internal User Representation
  * This class composes the internal representation of the user and defines how
@@ -40,6 +42,19 @@ public class User implements Serializable {
 
 	@Column(nullable = false)
 	private UserStatus status;
+
+	@Column(nullable = false)
+	private LocalDate creationDate;
+
+	@Column(nullable = false)
+	private Integer highestScore = 0;
+
+	@Column(nullable = false)
+	private Integer totalScore = 0;
+
+	@Column(nullable = false)
+	private Long timePlayed = 0L;
+
 
 	public Long getId() {
 		return id;
@@ -87,5 +102,37 @@ public class User implements Serializable {
 
 	public void setStatus(UserStatus status) {
 		this.status = status;
+	}
+
+	public LocalDate getCreationDate() {
+		return creationDate;
+	}
+
+	public void setCreationDate(LocalDate creationDate) {
+		this.creationDate = creationDate;
+	}
+
+	public Integer getHighestScore() {
+		return highestScore;
+	}
+
+	public void setHighestScore(Integer highestScore) {
+		this.highestScore = highestScore;
+	}
+
+	public Integer getTotalScore() {
+		return totalScore;
+	}
+
+	public void setTotalScore(Integer totalScore) {
+		this.totalScore = totalScore;
+	}
+
+	public Long getTimePlayed() {
+		return timePlayed;
+	}
+
+	public void setTimePlayed(Long timePlayed) {
+		this.timePlayed = timePlayed;
 	}
 }

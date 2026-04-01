@@ -102,4 +102,23 @@ public class UserServiceIntegrationTest {
 
 		assertThrows(ResponseStatusException.class, () -> userService.loginUser("testUsername", "wrongPassword"));
 	}
+	
+	@Test
+	public void getUserProfile_existingUser_success() {
+		User testUser = new User();
+		testUser.setName("testName");
+		testUser.setUsername("testUsername");
+		testUser.setPassword("password123");
+		User createdUser = userService.createUser(testUser);
+
+		User foundUser = userService.getUserProfile(createdUser.getId());
+
+		assertEquals(createdUser.getId(), foundUser.getId());
+		assertEquals("testUsername", foundUser.getUsername());
+		assertNotNull(foundUser.getCreationDate());
+		assertEquals(0, foundUser.getHighestScore());
+		assertEquals(0, foundUser.getTotalScore());
+		assertEquals(0L, foundUser.getTimePlayed());
+	}
+
 }

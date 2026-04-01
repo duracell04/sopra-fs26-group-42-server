@@ -146,4 +146,21 @@ public class UserServiceTest {
 		assertThrows(ResponseStatusException.class, () -> userService.loginUser("testUsername", "wrongPassword"));
 	}
 
+	@Test
+	public void getUserProfile_validId_success() {
+		Mockito.when(userRepository.findById(1L)).thenReturn(Optional.of(testUser));
+
+		User foundUser = userService.getUserProfile(1L);
+
+		assertEquals(testUser.getId(), foundUser.getId());
+		assertEquals(testUser.getUsername(), foundUser.getUsername());
+	}
+
+	@Test
+	public void getUserProfile_unknownId_throwsException() {
+		Mockito.when(userRepository.findById(99L)).thenReturn(Optional.empty());
+
+		assertThrows(ResponseStatusException.class, () -> userService.getUserProfile(99L));
+	}
+
 }

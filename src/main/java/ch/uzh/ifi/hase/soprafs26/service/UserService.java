@@ -15,6 +15,9 @@ import ch.uzh.ifi.hase.soprafs26.repository.UserRepository;
 import java.util.List;
 import java.util.UUID;
 
+import java.time.LocalDate;
+
+
 /**
  * User Service
  * This class is the "worker" and responsible for all functionality related to
@@ -41,6 +44,10 @@ public class UserService {
 	public User createUser(User newUser) {
 		newUser.setToken(UUID.randomUUID().toString());
 		newUser.setStatus(UserStatus.ONLINE);
+		newUser.setCreationDate(LocalDate.now());
+		newUser.setHighestScore(0);
+		newUser.setTotalScore(0);
+		newUser.setTimePlayed(0L);
 		checkIfUserExists(newUser);
 		// saves the given entity but data is only persisted in the database once
 		// flush() is called
@@ -95,5 +102,12 @@ public class UserService {
 		} else if (userByName != null) {
 			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, String.format(baseErrorMessage, "name", "is"));
 		}
+	}
+
+	public User getUserProfile(Long userId) {
+		return userRepository.findById(userId)
+				.orElseThrow(() -> new ResponseStatusException(
+						HttpStatus.NOT_FOUND,
+						"User with id " + userId + " was not found"));
 	}
 }

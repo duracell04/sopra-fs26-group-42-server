@@ -7,11 +7,14 @@ import ch.uzh.ifi.hase.soprafs26.entity.User;
 import ch.uzh.ifi.hase.soprafs26.rest.dto.UserGetDTO;
 import ch.uzh.ifi.hase.soprafs26.rest.dto.UserLoginDTO;
 import ch.uzh.ifi.hase.soprafs26.rest.dto.UserPostDTO;
+import ch.uzh.ifi.hase.soprafs26.rest.dto.UserProfileGetDTO;
 import ch.uzh.ifi.hase.soprafs26.rest.mapper.DTOMapper;
 import ch.uzh.ifi.hase.soprafs26.service.UserService;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import ch.uzh.ifi.hase.soprafs26.rest.dto.UserProfileGetDTO;
 
 /**
  * User Controller
@@ -69,5 +72,13 @@ public class UserController {
 	public UserGetDTO loginUser(@RequestBody UserLoginDTO userLoginDTO) {
 		User loggedInUser = userService.loginUser(userLoginDTO.getUsername(), userLoginDTO.getPassword());
 		return DTOMapper.INSTANCE.convertEntityToUserGetDTO(loggedInUser);
+	}
+
+	@GetMapping("/users/{userId}/profile")
+	@ResponseStatus(HttpStatus.OK)
+	@ResponseBody
+	public UserProfileGetDTO getUserProfile(@PathVariable Long userId) {
+		User user = userService.getUserProfile(userId);
+		return DTOMapper.INSTANCE.convertEntityToUserProfileGetDTO(user);
 	}
 }
