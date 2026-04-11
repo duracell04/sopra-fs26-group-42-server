@@ -43,6 +43,7 @@ public class UserServiceIntegrationTest {
 		User testUser = new User();
 		testUser.setName("testName");
 		testUser.setUsername("testUsername");
+		testUser.setPassword("password123");
 
 		// when
 		User createdUser = userService.createUser(testUser);
@@ -52,7 +53,7 @@ public class UserServiceIntegrationTest {
 		assertEquals(testUser.getName(), createdUser.getName());
 		assertEquals(testUser.getUsername(), createdUser.getUsername());
 		assertNotNull(createdUser.getToken());
-		assertEquals(UserStatus.OFFLINE, createdUser.getStatus());
+		assertEquals(UserStatus.ONLINE, createdUser.getStatus());
 	}
 
 	@Test
@@ -62,6 +63,7 @@ public class UserServiceIntegrationTest {
 		User testUser = new User();
 		testUser.setName("testName");
 		testUser.setUsername("testUsername");
+		testUser.setPassword("password123");
 		userService.createUser(testUser);
 
 		// attempt to create second user with same username
@@ -70,8 +72,53 @@ public class UserServiceIntegrationTest {
 		// change the name but forget about the username
 		testUser2.setName("testName2");
 		testUser2.setUsername("testUsername");
+		testUser2.setPassword("password456");
 
 		// check that an error is thrown
 		assertThrows(ResponseStatusException.class, () -> userService.createUser(testUser2));
 	}
+
+	@Test
+	public void loginUser_validCredentials_success() {
+		User testUser = new User();
+		testUser.setName("testName");
+		testUser.setUsername("testUsername");
+		testUser.setPassword("password123");
+		userService.createUser(testUser);
+
+		User loggedInUser = userService.loginUser("testUsername", "password123");
+
+		assertEquals("testUsername", loggedInUser.getUsername());
+		assertEquals(UserStatus.ONLINE, loggedInUser.getStatus());
+	}
+
+	@Test
+	public void loginUser_invalidPassword_throwsException() {
+		User testUser = new User();
+		testUser.setName("testName");
+		testUser.setUsername("testUsername");
+		testUser.setPassword("password123");
+		userService.createUser(testUser);
+
+		assertThrows(ResponseStatusException.class, () -> userService.loginUser("testUsername", "wrongPassword"));
+	}
+	
+	@Test
+	public void getUserProfile_existingUser_success() {
+		User testUser = new User();
+		testUser.setName("testName");
+		testUser.setUsername("testUsername");
+		testUser.setPassword("password123");
+		User createdUser = userService.createUser(testUser);
+
+		User foundUser = userService.getUserProfile(createdUser.getId());
+
+		assertEquals(createdUser.getId(), foundUser.getId());
+		assertEquals("testUsername", foundUser.getUsername());
+		assertNotNull(foundUser.getCreationDate());
+		assertEquals(0, foundUser.getHighestScore());
+		assertEquals(0, foundUser.getTotalScore());
+		assertEquals(0L, foundUser.getTimePlayed());
+	}
+
 }

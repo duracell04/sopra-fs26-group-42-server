@@ -5,18 +5,8 @@ import jakarta.persistence.*;
 import ch.uzh.ifi.hase.soprafs26.constant.UserStatus;
 
 import java.io.Serializable;
-import java.time.LocalDateTime;
+import java.time.LocalDate;
 
-/**
- * Internal User Representation
- * This class composes the internal representation of the user and defines how
- * the user is stored in the database.
- * Every variable will be mapped into a database field with the @Column
- * annotation
- * - nullable = false -> this cannot be left empty
- * - unique = true -> this value must be unqiue across the database -> composes
- * the primary key
- */
 @Entity
 @Table(name = "users")
 public class User implements Serializable {
@@ -40,7 +30,16 @@ public class User implements Serializable {
 	private UserStatus status;
 
 	@Column(nullable = false)
-	private LocalDateTime creationDate;
+	private LocalDate creationDate;
+
+	@Column(nullable = false)
+	private Integer highestScore = 0;
+
+	@Column(nullable = false)
+	private Integer totalScore = 0;
+
+	@Column(nullable = false)
+	private Long timePlayed = 0L;
 
 	public Long getId() {
 		return id;
@@ -82,11 +81,35 @@ public class User implements Serializable {
 		this.status = status;
 	}
 
-	public LocalDateTime getCreationDate() {
+	public LocalDate getCreationDate() {
 		return creationDate;
 	}
 
-	public void setCreationDate(LocalDateTime creationDate) {
+	public void setCreationDate(LocalDate creationDate) {
 		this.creationDate = creationDate;
+	}
+
+	public Integer getHighestScore() {
+		return highestScore;
+	}
+
+	public void setHighestScore(Integer highestScore) {
+		this.highestScore = highestScore;
+	}
+
+	public Integer getTotalScore() {
+		return totalScore;
+	}
+
+	public void setTotalScore(Integer totalScore) {
+		this.totalScore = totalScore;
+	}
+
+	public Long getTimePlayed() {
+		return timePlayed;
+	}
+
+	public void setTimePlayed(Long timePlayed) {
+		this.timePlayed = timePlayed;
 	}
 }

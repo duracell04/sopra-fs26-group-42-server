@@ -12,7 +12,7 @@ import ch.uzh.ifi.hase.soprafs26.constant.UserStatus;
 import ch.uzh.ifi.hase.soprafs26.entity.User;
 import ch.uzh.ifi.hase.soprafs26.repository.UserRepository;
 
-import java.time.LocalDateTime;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
 
@@ -34,8 +34,11 @@ public class UserService {
 
 	public User createUser(User newUser) {
 		newUser.setToken(UUID.randomUUID().toString());
-		newUser.setStatus(UserStatus.OFFLINE);
-		newUser.setCreationDate(LocalDateTime.now());
+		newUser.setStatus(UserStatus.ONLINE);
+		newUser.setCreationDate(LocalDate.now());
+		newUser.setHighestScore(0);
+		newUser.setTotalScore(0);
+		newUser.setTimePlayed(0L);
 
 		checkIfUserExists(newUser);
 		newUser = userRepository.save(newUser);
@@ -56,6 +59,21 @@ public class UserService {
 		userRepository.flush();
 
 		return user;
+	}
+
+	public void logoutUser(Long id) {
+		User user = userRepository.findById(id)
+				.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,
+						"User with id " + id + " was not found"));
+		user.setStatus(UserStatus.OFFLINE);
+		userRepository.flush();
+	}
+
+	public User getUserProfile(Long userId) {
+		return userRepository.findById(userId)
+				.orElseThrow(() -> new ResponseStatusException(
+						HttpStatus.NOT_FOUND,
+						"User with id " + userId + " was not found"));
 	}
 
 	private void checkIfUserExists(User userToBeCreated) {

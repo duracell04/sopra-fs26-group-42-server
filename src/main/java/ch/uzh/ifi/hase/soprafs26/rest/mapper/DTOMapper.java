@@ -6,6 +6,7 @@ import org.mapstruct.factory.Mappers;
 import ch.uzh.ifi.hase.soprafs26.entity.User;
 import ch.uzh.ifi.hase.soprafs26.rest.dto.UserGetDTO;
 import ch.uzh.ifi.hase.soprafs26.rest.dto.UserPostDTO;
+import ch.uzh.ifi.hase.soprafs26.rest.dto.UserProfileGetDTO;
 
 /**
  * DTOMapper
@@ -29,11 +30,23 @@ public interface DTOMapper {
 	@Mapping(target = "token", ignore = true)
 	@Mapping(target = "status", ignore = true)
 	@Mapping(target = "creationDate", ignore = true)
+	@Mapping(target = "highestScore", ignore = true)
+	@Mapping(target = "totalScore", ignore = true)
+	@Mapping(target = "timePlayed", ignore = true)
 	User convertUserPostDTOtoEntity(UserPostDTO userPostDTO);
 
 	@Mapping(source = "id", target = "id")
 	@Mapping(source = "username", target = "username")
+	@Mapping(source = "token", target = "token")
 	@Mapping(source = "status", target = "status")
 	@Mapping(source = "creationDate", target = "creationDate")
 	UserGetDTO convertEntityToUserGetDTO(User user);
+
+	@Mapping(source = "id", target = "userId")
+	@Mapping(source = "username", target = "username")
+	@Mapping(source = "creationDate", target = "joinDate", dateFormat = "yyyy-MM-dd")
+	@Mapping(source = "highestScore", target = "highestScore")
+	@Mapping(source = "totalScore", target = "totalScore")
+	@Mapping(source = "timePlayed", target = "timePlayed")
+	UserProfileGetDTO convertEntityToUserProfileGetDTO(User user);
 }

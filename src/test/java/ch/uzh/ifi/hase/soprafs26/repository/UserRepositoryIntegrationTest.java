@@ -26,6 +26,7 @@ public class UserRepositoryIntegrationTest {
 		User user = new User();
 		user.setName("Firstname Lastname");
 		user.setUsername("firstname@lastname");
+		user.setPassword("password123");
 		user.setStatus(UserStatus.OFFLINE);
 		user.setToken("1");
 
