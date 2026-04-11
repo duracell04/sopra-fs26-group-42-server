@@ -5,7 +5,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import ch.uzh.ifi.hase.soprafs26.entity.Game;
 import ch.uzh.ifi.hase.soprafs26.entity.GameBlock;
-import ch.uzh.ifi.hase.soprafs26.entity.GameBlockState;
+import ch.uzh.ifi.hase.soprafs26.constant.GameBlockState;
 
 @Service
 @Transactional

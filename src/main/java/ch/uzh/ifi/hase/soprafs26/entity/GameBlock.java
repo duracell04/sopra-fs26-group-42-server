@@ -2,7 +2,7 @@ package ch.uzh.ifi.hase.soprafs26.entity;
 
 import jakarta.persistence.*;
 import java.time.Instant;
-import ch.uzh.ifi.hase.soprafs26.utils.gameObject
+import ch.uzh.ifi.hase.soprafs26.constant.GameBlockState;
 
 @Entity
 public class GameBlock {

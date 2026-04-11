@@ -5,8 +5,7 @@ import jakarta.persistence.*;
 import ch.uzh.ifi.hase.soprafs26.constant.UserStatus;
 
 import java.io.Serializable;
-
-
+import java.time.LocalDateTime;
 
 /**
  * Internal User Representation
@@ -31,18 +30,17 @@ public class User implements Serializable {
 	@Column(nullable = false, unique = true)
 	private String username;
 
-	@Column(nullable = false)
-	private String passwordHash;
-
-	// @Enumerated(EnumType.STRING) ???
 	@Column(nullable = false, unique = true)
 	private String token;
 
 	@Column(nullable = false)
+	private String password;
+
+	@Column(nullable = false)
 	private UserStatus status;
 
-	@Column(nullable = false) // TODO: import localDateTime later
-	private localDateTime creationDate;
+	@Column(nullable = false)
+	private LocalDateTime creationDate;
 
 	public Long getId() {
 		return id;
@@ -60,13 +58,13 @@ public class User implements Serializable {
 		this.username = username;
 	}
 
-   	public String getPassword() {
-        return password;
-    }
+	public String getPassword() {
+		return password;
+	}
 
-    public void setPassword(String password) {
-        this.password = password;
-    }
+	public void setPassword(String password) {
+		this.password = password;
+	}
 
 	public String getToken() {
 		return token;
@@ -84,11 +82,11 @@ public class User implements Serializable {
 		this.status = status;
 	}
 
-	public localDateTime getCreationDate() {
-		return passwordHash;
+	public LocalDateTime getCreationDate() {
+		return creationDate;
 	}
 
-	public void setCreationDate(localDateTime creationDate) {
+	public void setCreationDate(LocalDateTime creationDate) {
 		this.creationDate = creationDate;
 	}
 }
