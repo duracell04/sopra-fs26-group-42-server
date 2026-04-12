@@ -1,0 +1,49 @@
+package ch.uzh.ifi.hase.soprafs26.controller;
+
+import org.springframework.http.HttpStatus;
+import org.springframework.web.bind.annotation.*;
+
+import ch.uzh.ifi.hase.soprafs26.rest.dto.SessionGetDTO;
+import ch.uzh.ifi.hase.soprafs26.rest.dto.SessionPostDTO;
+import ch.uzh.ifi.hase.soprafs26.service.GameSessionService;
+
+import java.util.Map;
+
+@RestController
+@RequestMapping("/sessions")
+public class GameSessionController {
+
+    private final GameSessionService gameSessionService;
+
+    public GameSessionController(GameSessionService gameSessionService) {
+        this.gameSessionService = gameSessionService;
+    }
+
+    @PostMapping
+    @ResponseStatus(HttpStatus.CREATED)
+    @ResponseBody
+    public SessionGetDTO createSession(@RequestBody SessionPostDTO sessionPostDTO) {
+        return gameSessionService.createSession(sessionPostDTO.getCreatorId());
+    }
+
+    @GetMapping("/{code}")
+    @ResponseStatus(HttpStatus.OK)
+    @ResponseBody
+    public SessionGetDTO getSession(@PathVariable String code) {
+        return gameSessionService.getSession(code);
+    }
+
+    @DeleteMapping("/{code}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void cancelSession(@PathVariable String code, @RequestParam Long userId) {
+        gameSessionService.cancelSession(code, userId);
+    }
+
+    @PostMapping("/{code}/start")
+    @ResponseStatus(HttpStatus.OK)
+    @ResponseBody
+    public SessionGetDTO startGame(@PathVariable String code, @RequestBody Map<String, Long> body) {
+        Long userId = body.get("userId");
+        return gameSessionService.startGame(code, userId);
+    }
+}
