@@ -41,7 +41,6 @@ public class UserServiceIntegrationTest {
 		assertNull(userRepository.findByUsername("testUsername"));
 
 		User testUser = new User();
-		testUser.setName("testName");
 		testUser.setUsername("testUsername");
 		testUser.setPassword("password123");
 
@@ -50,7 +49,6 @@ public class UserServiceIntegrationTest {
 
 		// then
 		assertEquals(testUser.getId(), createdUser.getId());
-		assertEquals(testUser.getName(), createdUser.getName());
 		assertEquals(testUser.getUsername(), createdUser.getUsername());
 		assertNotNull(createdUser.getToken());
 		assertEquals(UserStatus.ONLINE, createdUser.getStatus());
@@ -61,7 +59,6 @@ public class UserServiceIntegrationTest {
 		assertNull(userRepository.findByUsername("testUsername"));
 
 		User testUser = new User();
-		testUser.setName("testName");
 		testUser.setUsername("testUsername");
 		testUser.setPassword("password123");
 		userService.createUser(testUser);
@@ -69,8 +66,7 @@ public class UserServiceIntegrationTest {
 		// attempt to create second user with same username
 		User testUser2 = new User();
 
-		// change the name but forget about the username
-		testUser2.setName("testName2");
+		// change the password but reuse the username
 		testUser2.setUsername("testUsername");
 		testUser2.setPassword("password456");
 
@@ -81,7 +77,6 @@ public class UserServiceIntegrationTest {
 	@Test
 	public void loginUser_validCredentials_success() {
 		User testUser = new User();
-		testUser.setName("testName");
 		testUser.setUsername("testUsername");
 		testUser.setPassword("password123");
 		userService.createUser(testUser);
@@ -95,7 +90,6 @@ public class UserServiceIntegrationTest {
 	@Test
 	public void loginUser_invalidPassword_throwsException() {
 		User testUser = new User();
-		testUser.setName("testName");
 		testUser.setUsername("testUsername");
 		testUser.setPassword("password123");
 		userService.createUser(testUser);
@@ -106,7 +100,6 @@ public class UserServiceIntegrationTest {
 	@Test
 	public void getUserProfile_existingUser_success() {
 		User testUser = new User();
-		testUser.setName("testName");
 		testUser.setUsername("testUsername");
 		testUser.setPassword("password123");
 		User createdUser = userService.createUser(testUser);

@@ -11,6 +11,7 @@ public class GameBlock {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Column(name = "block_value")
     private int value;
 
     @Enumerated(EnumType.STRING)

@@ -8,6 +8,8 @@ import org.springframework.boot.jpa.test.autoconfigure.TestEntityManager;
 import ch.uzh.ifi.hase.soprafs26.constant.UserStatus;
 import ch.uzh.ifi.hase.soprafs26.entity.User;
 
+import java.time.LocalDate;
+
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
@@ -21,24 +23,23 @@ public class UserRepositoryIntegrationTest {
 	private UserRepository userRepository;
 
 	@Test
-	public void findByName_success() {
+	public void findByUsername_success() {
 		// given
 		User user = new User();
-		user.setName("Firstname Lastname");
 		user.setUsername("firstname@lastname");
 		user.setPassword("password123");
 		user.setStatus(UserStatus.OFFLINE);
 		user.setToken("1");
+		user.setCreationDate(LocalDate.now());
 
 		entityManager.persist(user);
 		entityManager.flush();
 
 		// when
-		User found = userRepository.findByName(user.getName());
+		User found = userRepository.findByUsername(user.getUsername());
 
 		// then
 		assertNotNull(found.getId());
-		assertEquals(found.getName(), user.getName());
 		assertEquals(found.getUsername(), user.getUsername());
 		assertEquals(found.getToken(), user.getToken());
 		assertEquals(found.getStatus(), user.getStatus());
