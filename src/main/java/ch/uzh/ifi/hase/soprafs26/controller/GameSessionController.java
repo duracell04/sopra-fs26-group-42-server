@@ -4,6 +4,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
 import ch.uzh.ifi.hase.soprafs26.rest.dto.SessionGetDTO;
+import ch.uzh.ifi.hase.soprafs26.rest.dto.SessionJoinPostDTO;
 import ch.uzh.ifi.hase.soprafs26.rest.dto.SessionPostDTO;
 import ch.uzh.ifi.hase.soprafs26.service.GameSessionService;
 
@@ -31,6 +32,13 @@ public class GameSessionController {
     @ResponseBody
     public SessionGetDTO getSession(@PathVariable String code) {
         return gameSessionService.getSession(code);
+    }
+
+    @PostMapping("/{code}/join")
+    @ResponseStatus(HttpStatus.OK)
+    @ResponseBody
+    public SessionGetDTO joinSession(@PathVariable String code, @RequestBody SessionJoinPostDTO sessionJoinPostDTO) {
+        return gameSessionService.joinSession(code, sessionJoinPostDTO.getUserId());
     }
 
     @DeleteMapping("/{code}")

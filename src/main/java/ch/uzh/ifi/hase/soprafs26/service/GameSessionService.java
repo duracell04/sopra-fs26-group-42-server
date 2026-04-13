@@ -58,6 +58,22 @@ public class GameSessionService {
         return convertToDTO(session);
     }
 
+    public SessionGetDTO joinSession(String code, Long userId) {
+        User joiner = userRepository.findById(userId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
+
+        GameSession session = findAndCheckExpiry(code);
+        validateJoinSession(session, joiner.getId());
+
+        session.setJoinerId(joiner.getId());
+        session.setJoinerUsername(joiner.getUsername());
+        sessionRepository.flush();
+
+        SessionGetDTO dto = convertToDTO(session);
+        messagingTemplate.convertAndSend("/topic/session/" + code, dto);
+        return dto;
+    }
+
     public void cancelSession(String code, Long userId) {
         GameSession session = findSession(code);
         if (!session.getCreatorId().equals(userId)) {
@@ -104,6 +120,21 @@ public class GameSessionService {
             messagingTemplate.convertAndSend("/topic/session/" + code, convertToDTO(session));
         }
         return session;
+    }
+
+    private void validateJoinSession(GameSession session, Long userId) {
+        if (session.getCreatorId().equals(userId)) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "The session creator cannot join their own session");
+        }
+        if (session.getStatus() == SessionStatus.CANCELLED) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "Session is no longer joinable");
+        }
+        if (session.getStatus() == SessionStatus.ACTIVE) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "Session has already started");
+        }
+        if (session.getJoinerId() != null) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "Session is already full");
+        }
     }
 
     private String generateUniqueCode() {
