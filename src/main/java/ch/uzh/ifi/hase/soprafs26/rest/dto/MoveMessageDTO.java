@@ -1,12 +1,11 @@
 package ch.uzh.ifi.hase.soprafs26.rest.dto;
 
-public class ShootMessageDTO {
+public class MoveMessageDTO {
 
     private String type;
     private Long playerId;
     private double x;
     private double y;
-
 
     public String getType() {
         return type;
