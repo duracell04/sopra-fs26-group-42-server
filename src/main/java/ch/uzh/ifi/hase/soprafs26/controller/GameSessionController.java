@@ -3,6 +3,7 @@ package ch.uzh.ifi.hase.soprafs26.controller;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
+import ch.uzh.ifi.hase.soprafs26.rest.dto.ProblemsDTO;
 import ch.uzh.ifi.hase.soprafs26.rest.dto.SessionGetDTO;
 import ch.uzh.ifi.hase.soprafs26.rest.dto.SessionJoinPostDTO;
 import ch.uzh.ifi.hase.soprafs26.rest.dto.SessionPostDTO;
@@ -45,6 +46,21 @@ public class GameSessionController {
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void cancelSession(@PathVariable String code, @RequestParam Long userId) {
         gameSessionService.cancelSession(code, userId);
+    }
+
+    @PostMapping("/{code}/problems")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void saveProblems(@PathVariable String code, @RequestBody ProblemsDTO dto) {
+        gameSessionService.saveProblems(code, dto.getProblemsJson());
+    }
+
+    @GetMapping("/{code}/problems")
+    @ResponseStatus(HttpStatus.OK)
+    @ResponseBody
+    public ProblemsDTO getProblems(@PathVariable String code) {
+        ProblemsDTO dto = new ProblemsDTO();
+        dto.setProblemsJson(gameSessionService.getProblems(code));
+        return dto;
     }
 
     @PostMapping("/{code}/start")

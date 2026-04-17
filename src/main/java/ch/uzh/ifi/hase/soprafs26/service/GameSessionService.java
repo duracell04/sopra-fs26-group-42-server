@@ -101,6 +101,20 @@ public class GameSessionService {
         return dto;
     }
 
+    public void saveProblems(String code, String problemsJson) {
+        GameSession session = findSession(code);
+        session.setProblemsJson(problemsJson);
+        sessionRepository.flush();
+    }
+
+    public String getProblems(String code) {
+        GameSession session = findSession(code);
+        if (session.getProblemsJson() == null) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Problems not yet generated");
+        }
+        return session.getProblemsJson();
+    }
+
     private GameSession findSession(String code) {
         GameSession session = sessionRepository.findByCode(code);
         if (session == null) {
