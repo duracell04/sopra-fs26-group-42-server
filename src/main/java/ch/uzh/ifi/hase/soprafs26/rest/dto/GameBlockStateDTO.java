@@ -1,25 +1,12 @@
-package ch.uzh.ifi.hase.soprafs26.entity;
+package ch.uzh.ifi.hase.soprafs26.rest.dto;
 
-import jakarta.persistence.*;
-import java.time.Instant;
-import ch.uzh.ifi.hase.soprafs26.constant.GameBlockState;
+public class GameBlockStateDTO {
 
-@Entity
-public class GameBlock {
-
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-
-    @Column(name = "block_value")
     private int value;
-
-    @Enumerated(EnumType.STRING)
-    private GameBlockState state = GameBlockState.DEFAULT;
+    private String state;
     private Long selectedByUserId;
-    private Instant selectedUntil;
-
-    // Getter & Setter 
+    private String selectedUntil;
 
     public Long getId() {
         return id;
@@ -37,11 +24,11 @@ public class GameBlock {
         this.value = value;
     }
 
-    public GameBlockState getState() {
+    public String getState() {
         return state;
     }
 
-    public void setState(GameBlockState state) {
+    public void setState(String state) {
         this.state = state;
     }
 
@@ -53,12 +40,11 @@ public class GameBlock {
         this.selectedByUserId = selectedByUserId;
     }
 
-    public Instant getSelectedUntil() {
+    public String getSelectedUntil() {
         return selectedUntil;
     }
 
-    public void setSelectedUntil(Instant selectedUntil) {
+    public void setSelectedUntil(String selectedUntil) {
         this.selectedUntil = selectedUntil;
     }
-
 }

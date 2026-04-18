@@ -12,6 +12,12 @@ import ch.uzh.ifi.hase.soprafs26.constant.GameBlockState;
 public class GameService {
 
     public Game resolvePair(Game game, GameBlock firstBlock, GameBlock currentBlock) {
+        
+        // prevent gameplay after game over
+        if (game.isGameOver()) {
+            return game;
+        }
+        
         if (isMatchingPair(firstBlock, currentBlock, game.getTargetProduct())) {
             firstBlock.setState(GameBlockState.ELIMINATED);
             currentBlock.setState(GameBlockState.ELIMINATED);
@@ -21,6 +27,16 @@ public class GameService {
             firstBlock.setState(GameBlockState.INCORRECT);
             currentBlock.setState(GameBlockState.INCORRECT);
             game.setPendingSelection(null);
+        
+
+        // deduct one life
+            game.setSharedLives(game.getSharedLives() - 1);
+
+            // check if game over
+            if (game.getSharedLives() == 0) {
+                game.setGameOver(true);
+            }
+            // ==========================
         }
 
         return game;
