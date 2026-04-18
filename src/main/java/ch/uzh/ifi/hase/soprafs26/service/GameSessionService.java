@@ -13,6 +13,7 @@ import ch.uzh.ifi.hase.soprafs26.repository.GameSessionRepository;
 import ch.uzh.ifi.hase.soprafs26.repository.UserRepository;
 import ch.uzh.ifi.hase.soprafs26.rest.dto.SessionGetDTO;
 
+import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -93,12 +94,40 @@ public class GameSessionService {
         if (session.getJoinerId() == null) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Need two players to start the game");
         }
+        if (session.getStartedAt() == null) {
+            session.setStartedAt(LocalDateTime.now());
+        }
         session.setStatus(SessionStatus.ACTIVE);
         sessionRepository.flush();
 
         SessionGetDTO dto = convertToDTO(session);
         messagingTemplate.convertAndSend("/topic/session/" + code, dto);
         return dto;
+    }
+
+    public SessionGetDTO finishGame(String code, Long userId) {
+        GameSession session = findSession(code);
+
+        if (!isParticipant(session, userId)) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Only session participants can finish the game");
+        }
+        if (session.getStatus() == SessionStatus.CANCELLED) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "Cancelled sessions cannot be finished");
+        }
+        if (session.getStartedAt() == null) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Session has not started yet");
+        }
+
+        if (session.getFinishedAt() == null) {
+            session.setFinishedAt(LocalDateTime.now());
+            sessionRepository.flush();
+
+            SessionGetDTO dto = convertToDTO(session);
+            messagingTemplate.convertAndSend("/topic/session/" + code, dto);
+            return dto;
+        }
+
+        return convertToDTO(session);
     }
 
     public void saveProblems(String code, String problemsJson) {
@@ -151,6 +180,11 @@ public class GameSessionService {
         }
     }
 
+    private boolean isParticipant(GameSession session, Long userId) {
+        return session.getCreatorId().equals(userId)
+                || (session.getJoinerId() != null && session.getJoinerId().equals(userId));
+    }
+
     private String generateUniqueCode() {
         String chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
         Random random = new Random();
@@ -173,6 +207,9 @@ public class GameSessionService {
         dto.setStatus(session.getStatus().name());
         dto.setCreatedAt(session.getCreatedAt());
         dto.setExpiresAt(session.getCreatedAt().plusMinutes(5));
+        dto.setStartedAt(session.getStartedAt());
+        dto.setFinishedAt(session.getFinishedAt());
+        dto.setElapsedSeconds(calculateElapsedSeconds(session));
 
         List<String> players = new ArrayList<>();
         players.add(session.getCreatorUsername());
@@ -182,5 +219,14 @@ public class GameSessionService {
         dto.setPlayers(players);
 
         return dto;
+    }
+
+    private Long calculateElapsedSeconds(GameSession session) {
+        if (session.getStartedAt() == null) {
+            return null;
+        }
+
+        LocalDateTime endTime = session.getFinishedAt() != null ? session.getFinishedAt() : LocalDateTime.now();
+        return Math.max(0, Duration.between(session.getStartedAt(), endTime).getSeconds());
     }
 }

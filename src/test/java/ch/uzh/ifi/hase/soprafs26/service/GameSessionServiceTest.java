@@ -20,6 +20,9 @@ import java.time.LocalDateTime;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 public class GameSessionServiceTest {
@@ -158,5 +161,85 @@ public class GameSessionServiceTest {
         assertEquals(HttpStatus.CONFLICT, exception.getStatusCode());
         assertEquals(SessionStatus.CANCELLED, session.getStatus());
         Mockito.verify(sessionRepository, Mockito.times(1)).flush();
+    }
+
+    @Test
+    public void startGame_setsStartedAtAndReturnsElapsedSeconds() {
+        session.setJoinerId(joiner.getId());
+        session.setJoinerUsername(joiner.getUsername());
+        Mockito.when(sessionRepository.findByCode(session.getCode())).thenReturn(session);
+
+        SessionGetDTO result = gameSessionService.startGame(session.getCode(), creator.getId());
+
+        assertEquals(SessionStatus.ACTIVE, session.getStatus());
+        assertNotNull(session.getStartedAt());
+        assertNotNull(result.getStartedAt());
+        assertNull(result.getFinishedAt());
+        assertNotNull(result.getElapsedSeconds());
+        assertTrue(result.getElapsedSeconds() >= 0);
+        Mockito.verify(sessionRepository, Mockito.times(1)).flush();
+    }
+
+    @Test
+    public void getSession_startedSessionReturnsNonNegativeElapsedSeconds() {
+        LocalDateTime startedAt = LocalDateTime.now().minusSeconds(12);
+        session.setStatus(SessionStatus.ACTIVE);
+        session.setStartedAt(startedAt);
+        Mockito.when(sessionRepository.findByCode(session.getCode())).thenReturn(session);
+
+        SessionGetDTO result = gameSessionService.getSession(session.getCode());
+
+        assertEquals(startedAt, result.getStartedAt());
+        assertNull(result.getFinishedAt());
+        assertNotNull(result.getElapsedSeconds());
+        assertTrue(result.getElapsedSeconds() >= 12);
+    }
+
+    @Test
+    public void finishGame_setsFinishedAtAndFreezesElapsedSeconds() {
+        LocalDateTime startedAt = LocalDateTime.now().minusSeconds(30);
+        session.setJoinerId(joiner.getId());
+        session.setJoinerUsername(joiner.getUsername());
+        session.setStatus(SessionStatus.ACTIVE);
+        session.setStartedAt(startedAt);
+        Mockito.when(sessionRepository.findByCode(session.getCode())).thenReturn(session);
+
+        SessionGetDTO firstResult = gameSessionService.finishGame(session.getCode(), joiner.getId());
+        SessionGetDTO secondResult = gameSessionService.finishGame(session.getCode(), joiner.getId());
+
+        assertNotNull(session.getFinishedAt());
+        assertNotNull(firstResult.getFinishedAt());
+        assertNotNull(firstResult.getElapsedSeconds());
+        assertEquals(firstResult.getFinishedAt(), secondResult.getFinishedAt());
+        assertEquals(firstResult.getElapsedSeconds(), secondResult.getElapsedSeconds());
+    }
+
+    @Test
+    public void finishGame_nonParticipant_throwsForbidden() {
+        User outsider = new User();
+        outsider.setId(3L);
+        session.setJoinerId(joiner.getId());
+        session.setJoinerUsername(joiner.getUsername());
+        session.setStatus(SessionStatus.ACTIVE);
+        session.setStartedAt(LocalDateTime.now().minusSeconds(10));
+        Mockito.when(sessionRepository.findByCode(session.getCode())).thenReturn(session);
+
+        ResponseStatusException exception =
+                assertThrows(ResponseStatusException.class, () -> gameSessionService.finishGame(session.getCode(), outsider.getId()));
+
+        assertEquals(HttpStatus.FORBIDDEN, exception.getStatusCode());
+    }
+
+    @Test
+    public void finishGame_beforeStart_throwsBadRequest() {
+        session.setJoinerId(joiner.getId());
+        session.setJoinerUsername(joiner.getUsername());
+        session.setStatus(SessionStatus.WAITING);
+        Mockito.when(sessionRepository.findByCode(session.getCode())).thenReturn(session);
+
+        ResponseStatusException exception =
+                assertThrows(ResponseStatusException.class, () -> gameSessionService.finishGame(session.getCode(), creator.getId()));
+
+        assertEquals(HttpStatus.BAD_REQUEST, exception.getStatusCode());
     }
 }
