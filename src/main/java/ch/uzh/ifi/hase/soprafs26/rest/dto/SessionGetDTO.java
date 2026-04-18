@@ -12,6 +12,9 @@ public class SessionGetDTO {
     private String status;
     private LocalDateTime createdAt;
     private LocalDateTime expiresAt;
+    private LocalDateTime startedAt;
+    private LocalDateTime finishedAt;
+    private Long elapsedSeconds;
 
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
@@ -33,4 +36,13 @@ public class SessionGetDTO {
 
     public LocalDateTime getExpiresAt() { return expiresAt; }
     public void setExpiresAt(LocalDateTime expiresAt) { this.expiresAt = expiresAt; }
+
+    public LocalDateTime getStartedAt() { return startedAt; }
+    public void setStartedAt(LocalDateTime startedAt) { this.startedAt = startedAt; }
+
+    public LocalDateTime getFinishedAt() { return finishedAt; }
+    public void setFinishedAt(LocalDateTime finishedAt) { this.finishedAt = finishedAt; }
+
+    public Long getElapsedSeconds() { return elapsedSeconds; }
+    public void setElapsedSeconds(Long elapsedSeconds) { this.elapsedSeconds = elapsedSeconds; }
 }
