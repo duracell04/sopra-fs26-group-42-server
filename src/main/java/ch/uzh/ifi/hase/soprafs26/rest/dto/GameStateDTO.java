@@ -4,6 +4,7 @@ import java.util.List;
 
 public class GameStateDTO {
 
+    private final String type = "game_state";
     private String sessionCode;
     private Long gameId;
     private int score;
@@ -13,6 +14,10 @@ public class GameStateDTO {
     private Long pendingSelectionBlockId;
     private List<GameBlockStateDTO> blocks;
     private int targetProduct;
+
+    public String getType() {
+        return type;
+    }
 
     public String getSessionCode() {
         return sessionCode;
@@ -44,6 +49,10 @@ public class GameStateDTO {
 
     public void setSharedLives(int sharedLives) {
         this.sharedLives = sharedLives;
+    }
+
+    public int getLife() {
+        return sharedLives;
     }
 
     public boolean isGameOver() {

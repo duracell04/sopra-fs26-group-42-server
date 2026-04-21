@@ -54,7 +54,7 @@ public class GameWebSocketController {
     }
 
     // Resolves block pairs per session and emits a game state update.
-    @MessageMapping("/selectBlock")
+    @MessageMapping("/block/select")
     @SendTo("/topic/game")
     public GameStateDTO handleBlockSelection(BlockSelectionMessageDTO selection) {
         if (selection == null || !StringUtils.hasText(selection.getSessionCode())) {
