@@ -14,6 +14,9 @@ public class Game {
     private int score;
     private Long pendingSelection;
 
+    private int sharedLives = 3;
+    private boolean gameOver = false;
+
     public Long getId() {
         return id;
     }
@@ -45,4 +48,22 @@ public class Game {
     public void setPendingSelection(Long pendingSelection) {
         this.pendingSelection = pendingSelection;
     }
+
+    public int getSharedLives() {
+        return sharedLives;
+    }
+
+    public void setSharedLives(int sharedLives) {
+        this.sharedLives = Math.max(0, sharedLives);
+    }
+
+    public boolean isGameOver() {
+        return gameOver;
+    }
+
+    public void setGameOver(boolean gameOver) {
+        this.gameOver = gameOver;
+    }
+
+
 }

@@ -11,7 +11,7 @@ import ch.uzh.ifi.hase.soprafs26.service.GameSessionService;
 
 import java.util.Map;
 
-@RestController
+@RestController 
 @RequestMapping("/sessions")
 public class GameSessionController {
 
@@ -79,3 +79,5 @@ public class GameSessionController {
         return gameSessionService.finishGame(code, userId);
     }
 }
+
+//
