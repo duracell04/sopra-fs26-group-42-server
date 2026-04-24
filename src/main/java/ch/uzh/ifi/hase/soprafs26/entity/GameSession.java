@@ -38,6 +38,12 @@ public class GameSession implements Serializable {
     @Column(nullable = false)
     private LocalDateTime createdAt;
 
+    @Column
+    private LocalDateTime startedAt;
+
+    @Column
+    private LocalDateTime finishedAt;
+
     @Column(columnDefinition = "TEXT")
     private String problemsJson;
 
@@ -64,6 +70,12 @@ public class GameSession implements Serializable {
 
     public LocalDateTime getCreatedAt() { return createdAt; }
     public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
+
+    public LocalDateTime getStartedAt() { return startedAt; }
+    public void setStartedAt(LocalDateTime startedAt) { this.startedAt = startedAt; }
+
+    public LocalDateTime getFinishedAt() { return finishedAt; }
+    public void setFinishedAt(LocalDateTime finishedAt) { this.finishedAt = finishedAt; }
 
     public String getProblemsJson() { return problemsJson; }
     public void setProblemsJson(String problemsJson) { this.problemsJson = problemsJson; }

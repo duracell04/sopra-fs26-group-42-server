@@ -70,6 +70,14 @@ public class GameSessionController {
         Long userId = body.get("userId");
         return gameSessionService.startGame(code, userId);
     }
+
+    @PostMapping("/{code}/finish")
+    @ResponseStatus(HttpStatus.OK)
+    @ResponseBody
+    public SessionGetDTO finishGame(@PathVariable String code, @RequestBody Map<String, Long> body) {
+        Long userId = body.get("userId");
+        return gameSessionService.finishGame(code, userId);
+    }
 }
 
 //
