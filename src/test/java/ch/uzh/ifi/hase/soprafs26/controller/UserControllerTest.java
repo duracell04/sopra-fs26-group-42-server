@@ -167,6 +167,54 @@ public class UserControllerTest {
 				.andExpect(jsonPath("$.timePlayed", is(360)));
 	}
 
+	@Test
+	public void createUser_duplicateUsername_returnsConflict() throws Exception {
+		UserPostDTO userPostDTO = new UserPostDTO();
+		userPostDTO.setUsername("testUsername");
+		userPostDTO.setPassword("password123");
+
+		given(userService.createUser(Mockito.any())).willThrow(
+				new ResponseStatusException(HttpStatus.CONFLICT, "Username already exists")
+		);
+
+		MockHttpServletRequestBuilder postRequest = post("/users")
+				.contentType(MediaType.APPLICATION_JSON)
+				.content(asJsonString(userPostDTO));
+
+		mockMvc.perform(postRequest).andExpect(status().isConflict());
+	}
+
+	@Test
+	public void loginUser_wrongCredentials_returnsUnauthorized() throws Exception {
+		UserLoginDTO userLoginDTO = new UserLoginDTO();
+		userLoginDTO.setUsername("testUsername");
+		userLoginDTO.setPassword("wrongPassword");
+
+		given(userService.loginUser("testUsername", "wrongPassword")).willThrow(
+				new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Invalid username or password.")
+		);
+
+		MockHttpServletRequestBuilder postRequest = post("/users/login")
+				.contentType(MediaType.APPLICATION_JSON)
+				.content(asJsonString(userLoginDTO));
+
+		mockMvc.perform(postRequest).andExpect(status().isUnauthorized());
+	}
+
+	@Test
+	public void getUserProfile_unknownUser_returnsNotFound() throws Exception {
+		given(userService.getUserProfile(99L)).willThrow(
+				new ResponseStatusException(HttpStatus.NOT_FOUND, "User with id 99 was not found")
+		);
+
+		MockHttpServletRequestBuilder getRequest = get("/users/99/profile")
+				.contentType(MediaType.APPLICATION_JSON);
+
+		mockMvc.perform(getRequest).andExpect(status().isNotFound());
+	}
+
+
+
 	/**
 	 * Helper Method to convert userPostDTO into a JSON string such that the input
 	 * can be processed
