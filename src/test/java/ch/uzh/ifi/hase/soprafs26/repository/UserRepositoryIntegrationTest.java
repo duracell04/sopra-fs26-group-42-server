@@ -44,4 +44,62 @@ public class UserRepositoryIntegrationTest {
 		assertEquals(found.getToken(), user.getToken());
 		assertEquals(found.getStatus(), user.getStatus());
 	}
+
+	@Test
+	public void findByUsername_unknownUsername_returnsNull() {
+		// when
+		User found = userRepository.findByUsername("unknownUser");
+
+		// then
+		assertEquals(null, found);
+	}
+
+	@Test
+	public void findByToken_success() {
+		// given
+		User user = new User();
+		user.setUsername("tokenUser");
+		user.setPassword("password123");
+		user.setStatus(UserStatus.ONLINE);
+		user.setToken("valid-token");
+		user.setCreationDate(LocalDate.now());
+
+		entityManager.persist(user);
+		entityManager.flush();
+
+		// when
+		User found = userRepository.findByToken(user.getToken());
+
+		// then
+		assertNotNull(found);
+		assertEquals(user.getUsername(), found.getUsername());
+		assertEquals(user.getToken(), found.getToken());
+		assertEquals(user.getStatus(), found.getStatus());
+	}
+
+	@Test
+	public void saveUser_withProfileStats_success() {
+		// given
+		User user = new User();
+		user.setUsername("profileUser");
+		user.setPassword("password123");
+		user.setStatus(UserStatus.OFFLINE);
+		user.setToken("profile-token");
+		user.setCreationDate(LocalDate.of(2026, 3, 29));
+		user.setHighestScore(25);
+		user.setTotalScore(100);
+		user.setTimePlayed(360L);
+
+		// when
+		User savedUser = userRepository.save(user);
+		entityManager.flush();
+
+		// then
+		assertNotNull(savedUser.getId());
+		assertEquals("profileUser", savedUser.getUsername());
+		assertEquals(LocalDate.of(2026, 3, 29), savedUser.getCreationDate());
+		assertEquals(25, savedUser.getHighestScore());
+		assertEquals(100, savedUser.getTotalScore());
+		assertEquals(360L, savedUser.getTimePlayed());
+	}
 }
