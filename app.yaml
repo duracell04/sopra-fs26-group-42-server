@@ -3,3 +3,10 @@
 
 runtime: java17
 instance_class: F2
+
+# Keep a single instance so the in-memory STOMP broker is shared by all
+# WebSocket connections. Multiple instances would silently drop messages
+# between players connected to different instances.
+automatic_scaling:
+  min_instances: 1
+  max_instances: 1
