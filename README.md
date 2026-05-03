@@ -48,6 +48,17 @@ More Information about [Gradle Wrapper](https://docs.gradle.org/current/userguid
 
 You can verify that the server is running by visiting `localhost:8080` in your browser.
 
+### OpenRouter game summaries
+
+The S16 game summary endpoint can call OpenRouter from the backend only. Configure secrets as runtime environment variables, not in committed files:
+
+```powershell
+$env:OPENROUTER_API_KEY="new-key-here"
+$env:OPENROUTER_MODEL="openrouter/free"
+```
+
+`OPENROUTER_MODEL` defaults to `openrouter/free` when omitted. If `OPENROUTER_API_KEY` is missing or OpenRouter is unavailable, the backend returns deterministic fallback feedback and still saves score/time stats.
+
 ### Test
 
 ```bash
