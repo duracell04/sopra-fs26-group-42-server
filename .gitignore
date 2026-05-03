@@ -39,6 +39,8 @@ server-runtime.log
 server-runtime.err.log
 *.DS_STORE
 .direnv
+.env*
+!.envrc
 
 # don't track the local.properties -> contains secrets
 local.properties

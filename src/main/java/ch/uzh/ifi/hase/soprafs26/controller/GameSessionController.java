@@ -4,9 +4,12 @@ import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
 import ch.uzh.ifi.hase.soprafs26.rest.dto.ProblemsDTO;
+import ch.uzh.ifi.hase.soprafs26.rest.dto.GameSummaryGetDTO;
+import ch.uzh.ifi.hase.soprafs26.rest.dto.GameSummaryPostDTO;
 import ch.uzh.ifi.hase.soprafs26.rest.dto.SessionGetDTO;
 import ch.uzh.ifi.hase.soprafs26.rest.dto.SessionJoinPostDTO;
 import ch.uzh.ifi.hase.soprafs26.rest.dto.SessionPostDTO;
+import ch.uzh.ifi.hase.soprafs26.service.GameSummaryService;
 import ch.uzh.ifi.hase.soprafs26.service.GameSessionService;
 
 import java.util.Map;
@@ -16,9 +19,11 @@ import java.util.Map;
 public class GameSessionController {
 
     private final GameSessionService gameSessionService;
+    private final GameSummaryService gameSummaryService;
 
-    public GameSessionController(GameSessionService gameSessionService) {
+    public GameSessionController(GameSessionService gameSessionService, GameSummaryService gameSummaryService) {
         this.gameSessionService = gameSessionService;
+        this.gameSummaryService = gameSummaryService;
     }
 
     @PostMapping
@@ -77,5 +82,12 @@ public class GameSessionController {
     public SessionGetDTO finishGame(@PathVariable String code, @RequestBody Map<String, Long> body) {
         Long userId = body.get("userId");
         return gameSessionService.finishGame(code, userId);
+    }
+
+    @PostMapping("/{code}/summary")
+    @ResponseStatus(HttpStatus.OK)
+    @ResponseBody
+    public GameSummaryGetDTO createSummary(@PathVariable String code, @RequestBody GameSummaryPostDTO summaryPostDTO) {
+        return gameSummaryService.createSummary(code, summaryPostDTO);
     }
 }
