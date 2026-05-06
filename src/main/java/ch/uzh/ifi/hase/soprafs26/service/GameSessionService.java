@@ -77,13 +77,20 @@ public class GameSessionService {
 
     public void cancelSession(String code, Long userId) {
         GameSession session = findSession(code);
-        if (!session.getCreatorId().equals(userId)) {
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Only the session creator can cancel the session");
-        }
-        session.setStatus(SessionStatus.CANCELLED);
-        sessionRepository.flush();
 
-        messagingTemplate.convertAndSend("/topic/session/" + code, convertToDTO(session));
+        if (session.getCreatorId().equals(userId)) {
+            session.setStatus(SessionStatus.CANCELLED);
+            sessionRepository.flush();
+            messagingTemplate.convertAndSend("/topic/session/" + code, convertToDTO(session));
+        } else if (userId.equals(session.getJoinerId())) {
+            // Joiner leaves — remove them and keep the session open for a new player
+            session.setJoinerId(null);
+            session.setJoinerUsername(null);
+            sessionRepository.flush();
+            messagingTemplate.convertAndSend("/topic/session/" + code, convertToDTO(session));
+        } else {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "You are not a participant of this session");
+        }
     }
 
     public SessionGetDTO startGame(String code, Long userId) {
