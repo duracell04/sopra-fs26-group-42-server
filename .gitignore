@@ -35,6 +35,7 @@ blog/bin/
 hs_err_pid*
 
 /build
+/data
 server-runtime.log
 server-runtime.err.log
 *.DS_STORE
