@@ -69,5 +69,5 @@ jobs:
           deliverables: app.yaml
           version: gh-${{ github.run_number }}-${{ github.run_attempt }}
 
-      - name: Test
-        run: curl "${{ steps.deploy.outputs.url }}"
+      - name: Test deployed backend
+        run: curl --fail --show-error --max-time 60 --retry 3 --retry-delay 10 "${{ steps.deploy.outputs.url }}/users"
