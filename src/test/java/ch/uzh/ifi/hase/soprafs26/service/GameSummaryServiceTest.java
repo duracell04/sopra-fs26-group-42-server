@@ -74,6 +74,8 @@ public class GameSummaryServiceTest {
         assertEquals(930L, result.getTimePlayed());
         assertEquals("Generated feedback.", result.getFeedback());
         assertNotNull(session.getFinishedAt());
+        assertTrue(session.isCreatorSummarySubmitted());
+        assertFalse(session.isJoinerSummarySubmitted());
         Mockito.verify(sessionRepository).flush();
         Mockito.verify(userRepository).flush();
         Mockito.verify(openRouterSummaryService).generateFeedback(42, 93L, 1, true);
@@ -92,6 +94,46 @@ public class GameSummaryServiceTest {
         assertEquals(42, result.getHighestScore());
         assertEquals(52, result.getTotalScore());
         assertEquals(30L, result.getTimePlayed());
+    }
+
+    @Test
+    public void createSummary_duplicateSubmissionThrowsConflictWithoutUpdatingStats() {
+        session.setCreatorSummarySubmitted(true);
+        LocalDateTime previousFinishedAt = session.getFinishedAt();
+        GameSummaryPostDTO request = summaryRequest(1L, 99, 120L, 3);
+
+        ResponseStatusException exception =
+                assertThrows(ResponseStatusException.class, () -> gameSummaryService.createSummary("ABC123", request));
+
+        assertEquals(HttpStatus.CONFLICT, exception.getStatusCode());
+        assertEquals(30, user.getHighestScore());
+        assertEquals(138, user.getTotalScore());
+        assertEquals(837L, user.getTimePlayed());
+        assertEquals(previousFinishedAt, session.getFinishedAt());
+        assertTrue(session.isCreatorSummarySubmitted());
+        Mockito.verify(sessionRepository, Mockito.never()).flush();
+        Mockito.verify(userRepository, Mockito.never()).flush();
+        Mockito.verifyNoInteractions(openRouterSummaryService);
+    }
+
+    @Test
+    public void createSummary_joinerFirstSubmissionMarksJoinerOnly() {
+        User joiner = new User();
+        joiner.setId(2L);
+        joiner.setUsername("guest");
+        joiner.setHighestScore(8);
+        joiner.setTotalScore(20);
+        joiner.setTimePlayed(60L);
+        Mockito.when(userRepository.findById(2L)).thenReturn(Optional.of(joiner));
+        GameSummaryPostDTO request = summaryRequest(2L, 12, 30L, 0);
+
+        GameSummaryGetDTO result = gameSummaryService.createSummary("ABC123", request);
+
+        assertTrue(result.getNewHighscore());
+        assertFalse(session.isCreatorSummarySubmitted());
+        assertTrue(session.isJoinerSummarySubmitted());
+        assertEquals(32, joiner.getTotalScore());
+        assertEquals(90L, joiner.getTimePlayed());
     }
 
     @Test
@@ -117,6 +159,18 @@ public class GameSummaryServiceTest {
                 assertThrows(ResponseStatusException.class, () -> gameSummaryService.createSummary("ABC123", request));
 
         assertEquals(HttpStatus.CONFLICT, exception.getStatusCode());
+    }
+
+    @Test
+    public void createSummary_unstartedSessionThrowsBadRequest() {
+        session.setStartedAt(null);
+        GameSummaryPostDTO request = summaryRequest(1L, 12, 30L, 0);
+
+        ResponseStatusException exception =
+                assertThrows(ResponseStatusException.class, () -> gameSummaryService.createSummary("ABC123", request));
+
+        assertEquals(HttpStatus.BAD_REQUEST, exception.getStatusCode());
+        Mockito.verifyNoInteractions(openRouterSummaryService);
     }
 
     private GameSummaryPostDTO summaryRequest(Long userId, Integer score, Long elapsedSeconds, Integer livesRemaining) {

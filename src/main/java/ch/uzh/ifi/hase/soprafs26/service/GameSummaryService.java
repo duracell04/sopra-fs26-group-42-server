@@ -41,6 +41,7 @@ public class GameSummaryService {
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
 
         validateSummarizableSession(session, user.getId());
+        rejectDuplicateSubmission(session, user.getId());
 
         int score = sanitizeScore(request.getScore());
         long elapsedSeconds = sanitizeElapsedSeconds(request.getElapsedSeconds());
@@ -60,6 +61,7 @@ public class GameSummaryService {
         }
         user.setTotalScore(previousTotalScore + score);
         user.setTimePlayed(previousTimePlayed + elapsedSeconds);
+        markSummarySubmitted(session, user.getId());
 
         sessionRepository.flush();
         userRepository.flush();
@@ -101,6 +103,32 @@ public class GameSummaryService {
                 && (session.getJoinerId() == null || !session.getJoinerId().equals(userId))) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Only session participants can summarize the game");
         }
+    }
+
+    private void rejectDuplicateSubmission(GameSession session, Long userId) {
+        if (isCreator(session, userId) && session.isCreatorSummarySubmitted()) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "Summary already submitted for this user and session");
+        }
+        if (isJoiner(session, userId) && session.isJoinerSummarySubmitted()) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "Summary already submitted for this user and session");
+        }
+    }
+
+    private void markSummarySubmitted(GameSession session, Long userId) {
+        if (isCreator(session, userId)) {
+            session.setCreatorSummarySubmitted(true);
+        }
+        else if (isJoiner(session, userId)) {
+            session.setJoinerSummarySubmitted(true);
+        }
+    }
+
+    private boolean isCreator(GameSession session, Long userId) {
+        return session.getCreatorId().equals(userId);
+    }
+
+    private boolean isJoiner(GameSession session, Long userId) {
+        return session.getJoinerId() != null && session.getJoinerId().equals(userId);
     }
 
     private int sanitizeScore(Integer score) {

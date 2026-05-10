@@ -47,6 +47,12 @@ public class GameSession implements Serializable {
     @Column(columnDefinition = "TEXT")
     private String problemsJson;
 
+    @Column(nullable = false, columnDefinition = "boolean default false")
+    private boolean creatorSummarySubmitted = false;
+
+    @Column(nullable = false, columnDefinition = "boolean default false")
+    private boolean joinerSummarySubmitted = false;
+
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
 
@@ -79,4 +85,14 @@ public class GameSession implements Serializable {
 
     public String getProblemsJson() { return problemsJson; }
     public void setProblemsJson(String problemsJson) { this.problemsJson = problemsJson; }
+
+    public boolean isCreatorSummarySubmitted() { return creatorSummarySubmitted; }
+    public void setCreatorSummarySubmitted(boolean creatorSummarySubmitted) {
+        this.creatorSummarySubmitted = creatorSummarySubmitted;
+    }
+
+    public boolean isJoinerSummarySubmitted() { return joinerSummarySubmitted; }
+    public void setJoinerSummarySubmitted(boolean joinerSummarySubmitted) {
+        this.joinerSummarySubmitted = joinerSummarySubmitted;
+    }
 }
