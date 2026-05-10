@@ -151,12 +151,42 @@ public class GameSessionControllerTest {
     }
 
     @Test
+    public void joinSession_fullSession_returnsConflict() throws Exception {
+        given(gameSessionService.joinSession("ABC123", 3L)).willThrow(
+                new ResponseStatusException(HttpStatus.CONFLICT, "Session is already full")
+        );
+
+        mockMvc.perform(post("/sessions/ABC123/join")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {
+                                  "userId": 3
+                                }
+                                """))
+                .andExpect(status().isConflict());
+
+        Mockito.verify(gameSessionService).joinSession("ABC123", 3L);
+    }
+
+    @Test
     public void cancelSession_validRequest_returnsNoContent() throws Exception {
         mockMvc.perform(delete("/sessions/ABC123")
                         .param("userId", "1"))
                 .andExpect(status().isNoContent());
 
         Mockito.verify(gameSessionService).cancelSession("ABC123", 1L);
+    }
+
+    @Test
+    public void cancelSession_nonCreator_returnsForbidden() throws Exception {
+        Mockito.doThrow(new ResponseStatusException(HttpStatus.FORBIDDEN, "Only the session creator can cancel the session"))
+                .when(gameSessionService).cancelSession("ABC123", 2L);
+
+        mockMvc.perform(delete("/sessions/ABC123")
+                        .param("userId", "2"))
+                .andExpect(status().isForbidden());
+
+        Mockito.verify(gameSessionService).cancelSession("ABC123", 2L);
     }
 
     @Test
@@ -174,6 +204,23 @@ public class GameSessionControllerTest {
     }
 
     @Test
+    public void saveProblems_unknownSession_returnsNotFound() throws Exception {
+        Mockito.doThrow(new ResponseStatusException(HttpStatus.NOT_FOUND, "Session with code 'MISSING' not found"))
+                .when(gameSessionService).saveProblems("MISSING", "[]");
+
+        mockMvc.perform(post("/sessions/MISSING/problems")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {
+                                  "problemsJson": "[]"
+                                }
+                                """))
+                .andExpect(status().isNotFound());
+
+        Mockito.verify(gameSessionService).saveProblems("MISSING", "[]");
+    }
+
+    @Test
     public void getProblems_validRequest_returnsProblemsJson() throws Exception {
         given(gameSessionService.getProblems("ABC123")).willReturn("[]");
 
@@ -181,6 +228,19 @@ public class GameSessionControllerTest {
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.problemsJson", is("[]")));
+
+        Mockito.verify(gameSessionService).getProblems("ABC123");
+    }
+
+    @Test
+    public void getProblems_notGenerated_returnsNotFound() throws Exception {
+        given(gameSessionService.getProblems("ABC123")).willThrow(
+                new ResponseStatusException(HttpStatus.NOT_FOUND, "Problems not yet generated")
+        );
+
+        mockMvc.perform(get("/sessions/ABC123/problems")
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isNotFound());
 
         Mockito.verify(gameSessionService).getProblems("ABC123");
     }
@@ -205,6 +265,24 @@ public class GameSessionControllerTest {
                 .andExpect(jsonPath("$.players", hasSize(2)));
 
         Mockito.verify(gameSessionService).startGame("ABC123", 1L);
+    }
+
+    @Test
+    public void startGame_nonCreator_returnsForbidden() throws Exception {
+        given(gameSessionService.startGame("ABC123", 2L)).willThrow(
+                new ResponseStatusException(HttpStatus.FORBIDDEN, "Only the session creator can start the game")
+        );
+
+        mockMvc.perform(post("/sessions/ABC123/start")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {
+                                  "userId": 2
+                                }
+                                """))
+                .andExpect(status().isForbidden());
+
+        Mockito.verify(gameSessionService).startGame("ABC123", 2L);
     }
 
     @Test
@@ -246,6 +324,24 @@ public class GameSessionControllerTest {
                 .andExpect(jsonPath("$.players", hasSize(2)));
 
         Mockito.verify(gameSessionService).finishGame("ABC123", 2L);
+    }
+
+    @Test
+    public void finishGame_cancelledSession_returnsConflict() throws Exception {
+        given(gameSessionService.finishGame("ABC123", 1L)).willThrow(
+                new ResponseStatusException(HttpStatus.CONFLICT, "Cancelled sessions cannot be finished")
+        );
+
+        mockMvc.perform(post("/sessions/ABC123/finish")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {
+                                  "userId": 1
+                                }
+                                """))
+                .andExpect(status().isConflict());
+
+        Mockito.verify(gameSessionService).finishGame("ABC123", 1L);
     }
 
     @Test
