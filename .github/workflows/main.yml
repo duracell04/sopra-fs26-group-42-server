@@ -46,6 +46,22 @@ jobs:
         with:
           credentials_json: ${{ secrets.GCP_SERVICE_CREDENTIALS }}
 
+      - name: Add OpenRouter runtime environment
+        run: |
+          if [ -z "${OPENROUTER_API_KEY}" ]; then
+            echo "::error::OPENROUTER_API_KEY GitHub secret is not set"
+            exit 1
+          fi
+
+          cat >> app.yaml <<EOF
+
+          env_variables:
+            OPENROUTER_API_KEY: "${OPENROUTER_API_KEY}"
+            OPENROUTER_MODEL: "openrouter/free"
+          EOF
+        env:
+          OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
+
       - name: Deploy to App Engine
         id: deploy
         uses: google-github-actions/deploy-appengine@v3

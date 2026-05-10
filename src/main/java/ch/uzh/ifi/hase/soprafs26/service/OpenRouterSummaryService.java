@@ -1,11 +1,14 @@
 package ch.uzh.ifi.hase.soprafs26.service;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 @Service
 public class OpenRouterSummaryService {
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(OpenRouterSummaryService.class);
     private static final String DEFAULT_MODEL = "openrouter/free";
     private static final int MAX_TOKENS = 160;
 
@@ -24,6 +27,7 @@ public class OpenRouterSummaryService {
 
     public String generateFeedback(int score, long elapsedSeconds, int livesRemaining, boolean newHighscore) {
         if (apiKey == null || apiKey.isBlank()) {
+            LOGGER.warn("OPENROUTER_API_KEY is not configured; returning deterministic game summary feedback.");
             return fallbackFeedback(score, elapsedSeconds);
         }
 
@@ -35,6 +39,7 @@ public class OpenRouterSummaryService {
                     MAX_TOKENS
             );
             if (feedback == null || feedback.isBlank()) {
+                LOGGER.warn("OpenRouter returned blank feedback for model {}; returning deterministic game summary feedback.", model);
                 return fallbackFeedback(score, elapsedSeconds);
             }
             return feedback.trim();
@@ -42,6 +47,12 @@ public class OpenRouterSummaryService {
             if (error instanceof InterruptedException) {
                 Thread.currentThread().interrupt();
             }
+            LOGGER.warn(
+                    "OpenRouter feedback generation failed for model {} ({}: {}); returning deterministic game summary feedback.",
+                    model,
+                    error.getClass().getSimpleName(),
+                    error.getMessage()
+            );
             return fallbackFeedback(score, elapsedSeconds);
         }
     }
