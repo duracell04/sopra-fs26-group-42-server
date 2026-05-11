@@ -9,26 +9,28 @@ import ch.uzh.ifi.hase.soprafs26.rest.dto.GameSummaryGetDTO;
 import ch.uzh.ifi.hase.soprafs26.rest.dto.GameSummaryPostDTO;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionTemplate;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.time.LocalDateTime;
 
 @Service
-@Transactional
 public class GameSummaryService {
 
     private final GameSessionRepository sessionRepository;
     private final UserRepository userRepository;
     private final OpenRouterSummaryService openRouterSummaryService;
+    private final TransactionTemplate transactionTemplate;
 
     public GameSummaryService(
             GameSessionRepository sessionRepository,
             UserRepository userRepository,
-            OpenRouterSummaryService openRouterSummaryService) {
+            OpenRouterSummaryService openRouterSummaryService,
+            TransactionTemplate transactionTemplate) {
         this.sessionRepository = sessionRepository;
         this.userRepository = userRepository;
         this.openRouterSummaryService = openRouterSummaryService;
+        this.transactionTemplate = transactionTemplate;
     }
 
     public GameSummaryGetDTO createSummary(String code, GameSummaryPostDTO request) {
@@ -36,6 +38,30 @@ public class GameSummaryService {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Missing userId");
         }
 
+        SummaryPersistenceResult result = transactionTemplate.execute(status -> persistSummary(code, request));
+        if (result == null) {
+            throw new IllegalStateException("Summary persistence did not return a result");
+        }
+
+        String feedback = openRouterSummaryService.generateFeedback(
+                result.score(),
+                result.elapsedSeconds(),
+                result.livesRemaining(),
+                result.newHighscore()
+        );
+
+        GameSummaryGetDTO response = new GameSummaryGetDTO();
+        response.setScore(result.score());
+        response.setElapsedSeconds(result.elapsedSeconds());
+        response.setNewHighscore(result.newHighscore());
+        response.setFeedback(feedback);
+        response.setTotalScore(result.totalScore());
+        response.setHighestScore(result.highestScore());
+        response.setTimePlayed(result.timePlayed());
+        return response;
+    }
+
+    private SummaryPersistenceResult persistSummary(String code, GameSummaryPostDTO request) {
         GameSession session = findSession(code);
         User user = userRepository.findById(request.getUserId())
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
@@ -66,22 +92,15 @@ public class GameSummaryService {
         sessionRepository.flush();
         userRepository.flush();
 
-        String feedback = openRouterSummaryService.generateFeedback(
+        return new SummaryPersistenceResult(
                 score,
                 elapsedSeconds,
                 livesRemaining,
-                newHighscore
+                newHighscore,
+                user.getTotalScore(),
+                user.getHighestScore(),
+                user.getTimePlayed()
         );
-
-        GameSummaryGetDTO response = new GameSummaryGetDTO();
-        response.setScore(score);
-        response.setElapsedSeconds(elapsedSeconds);
-        response.setNewHighscore(newHighscore);
-        response.setFeedback(feedback);
-        response.setTotalScore(user.getTotalScore());
-        response.setHighestScore(user.getHighestScore());
-        response.setTimePlayed(user.getTimePlayed());
-        return response;
     }
 
     private GameSession findSession(String code) {
@@ -141,5 +160,15 @@ public class GameSummaryService {
 
     private int sanitizeLivesRemaining(Integer livesRemaining) {
         return Math.max(0, livesRemaining == null ? 0 : livesRemaining);
+    }
+
+    private record SummaryPersistenceResult(
+            int score,
+            long elapsedSeconds,
+            int livesRemaining,
+            boolean newHighscore,
+            int totalScore,
+            int highestScore,
+            long timePlayed) {
     }
 }
