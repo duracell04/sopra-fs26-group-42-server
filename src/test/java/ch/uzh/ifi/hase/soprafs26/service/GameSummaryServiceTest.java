@@ -11,6 +11,9 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.springframework.http.HttpStatus;
+import org.springframework.transaction.TransactionStatus;
+import org.springframework.transaction.support.TransactionCallback;
+import org.springframework.transaction.support.TransactionTemplate;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.time.LocalDateTime;
@@ -27,6 +30,7 @@ public class GameSummaryServiceTest {
     private GameSessionRepository sessionRepository;
     private UserRepository userRepository;
     private OpenRouterSummaryService openRouterSummaryService;
+    private TransactionTemplate transactionTemplate;
     private GameSummaryService gameSummaryService;
     private GameSession session;
     private User user;
@@ -36,7 +40,17 @@ public class GameSummaryServiceTest {
         sessionRepository = Mockito.mock(GameSessionRepository.class);
         userRepository = Mockito.mock(UserRepository.class);
         openRouterSummaryService = Mockito.mock(OpenRouterSummaryService.class);
-        gameSummaryService = new GameSummaryService(sessionRepository, userRepository, openRouterSummaryService);
+        transactionTemplate = Mockito.mock(TransactionTemplate.class);
+        Mockito.when(transactionTemplate.execute(Mockito.any())).thenAnswer(invocation -> {
+            TransactionCallback<?> callback = invocation.getArgument(0);
+            return callback.doInTransaction(Mockito.mock(TransactionStatus.class));
+        });
+        gameSummaryService = new GameSummaryService(
+                sessionRepository,
+                userRepository,
+                openRouterSummaryService,
+                transactionTemplate
+        );
 
         session = new GameSession();
         session.setId(1L);
